@@ -11,5 +11,8 @@ Msg
 
 ``` bash
 Msg /server:192.168.1.154 * "你好，局域网用户！"
+
+# bat
+for /l %i in (1, 1, 254) do Msg /server:192.168.37.%i * "你好！"
 ```
 
