@@ -4,10 +4,6 @@ NAT Network Address Translation 网络地址转换
 
 ---
 
-- [静态 NAT](# 静态 NAT)
-- [动态 NAT](# 动态 NAT)
-- [端口 NAT - PAT](# 端口 NAT - PAT)
-
 
 
 ## 静态 NAT
@@ -100,3 +96,6 @@ P204
 ###### 建立映射关系
 
 > RouterA (config) # ip nat inside source list 1 pool test overload
+
+
+[Cisco基础(五)：配置静态NAT、配置端口映射、配置动态NAT、PAT配置、办公区Internet的访问](https://www.cnblogs.com/baichuanhuihai/p/8277614.html)
