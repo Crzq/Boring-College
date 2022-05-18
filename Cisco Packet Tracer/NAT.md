@@ -53,13 +53,13 @@ P204
 
 ###### 定义内部全局地址池
 
-地址池名称为 test ，范围为从 200.1.1.10 到 200.1.1.100
+地址池名称为 test ，范围为从 200.1.1.1 到 200.1.1.2
 
-> RouterA (config) # ip nat pool test 200.1.1.10 200.1.1.3 netmask 255.255.255.252
+> RouterA (config) # ip nat pool test 200.1.1.1 200.1.1.3 netmask 255.255.255.252
 
 使用其他范围测试
 
-> RouterA (config) # ip nat pool test 200.1.1.10 200.1.1.4 netmask 255.255.255.252
+> RouterA (config) # ip nat pool test 200.1.1.1 200.1.1.4 netmask 255.255.255.252
 >
 > %Pool test mask 255.255.255.252 too small; should be at least 255.255.255.252
 >
