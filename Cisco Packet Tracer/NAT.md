@@ -65,6 +65,8 @@ P204
 >
 > %Start and end addresses on different subnets
 
+尽量不用端口地址 `200.1.1.1` 
+
 ###### 定义允许转换的地址
 
 允许 192.168.1.0 和 192.168.2.0 网络地址转换：
