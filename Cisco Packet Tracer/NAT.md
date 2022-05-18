@@ -101,4 +101,6 @@ P204
 
 
 ---
-[Cisco基础(五)：配置静态NAT、配置端口映射、配置动态NAT、PAT配置、办公区Internet的访问](https://www.cnblogs.com/baichuanhuihai/p/8277614.html)
+[Cisco基础(五)：配置静态NAT、配置端口映射、配置动态NAT、PAT配置、办公区Internet的访问](https://www.cnblogs.com/baichuanhuihai/p/8277614.html)  
+[思科模拟器 PacketTracer 删除nat地址池步骤]
+(https://blog.csdn.net/qq_39827677/article/details/103350881)
