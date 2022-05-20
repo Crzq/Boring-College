@@ -238,13 +238,21 @@
 > 0.0.0.0         192.168.116.2   0.0.0.0         UG        0 0          0 ens33
 > 192.168.116.0   0.0.0.0         255.255.255.0   U         0 0          0 ens33
 >
-> 
->
 > root@Canyou:~# route -n
-> Kernel IP routing table
+>Kernel IP routing table
 > Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 > 0.0.0.0         192.168.116.2   0.0.0.0         UG    100    0        0 ens33
 > 192.168.116.0   0.0.0.0         255.255.255.0   U     100    0        0 ens33
+
+> netstat
+>
+> -r或--route：显示Routing Table； 
+>
+> -n或--numeric：直接使用ip地址，而不通过域名服务器；
+
+> route
+>
+> -n：不执行DNS反向查找，直接显示数字形式的IP地址；
 
 ###### 查看 DNS
 
@@ -420,9 +428,19 @@ root@uos:~# lsattr
 root@uos:~# lsattr  /opt/uniontech.txt 
 ----ia--------e---- /opt/uniontech.txt
 
+root@uos:~# rm /opt/uniontech.txt
+rm: 无法删除'/opt/uniontech.txt': 不允许的操作
+
+
 ```
 
-
+> chattr
+>
+> a：让文件或目录仅供附加用途；
+>
+> i：不得任意更动文件或目录；
+>
+> > root@uos:~# chattr -ia /opt/uniontech.txt
 
 #### 字符串的查找
 
@@ -439,6 +457,14 @@ root@uos:~#vim  /opt/findcode.txt  //修改内容，只留行号
 1
 
 ```
+
+> grep
+>
+> -r -R/-r  --recursive       # 此参数的效果和指定“-d recurse”参数相同。
+>
+> -d<进行动作> --directories=<动作>  # 当指定要查找的是目录而非文件时，必须使用这项参数，否则grep命令将回报信息并停止动作。
+>
+> -n --line-number         # 在显示符合范本样式的那一列之前，标示出该列的编号。
 
 
 
@@ -895,8 +921,8 @@ root@uos:~# systemctl enable  ssh
 
 
 ```
-
-
+禁止自启动
+> root@uos:~# systemctl disable ssh
 
 
 
