@@ -64,7 +64,7 @@
 >
 > 创建目录用于挂载原先系统的root目录;
 >
-> > uos@UOS:~$ sudo mkdir 
+> > uos@UOS:~$ sudo mkdir /mnt/systmp
 >
 > 输入 `lsblk -f` ，查看 root 路径，root 所在路径是sda5;
 >
@@ -129,6 +129,10 @@
 > 重启网络服务
 >
 > root@uos:~# systemctl restart network-manager
+>
+> 或者：
+>
+> root@uos:~# /etc/init.d/network-manager restart
 
 打开一个新的终端，发现 hostname 已经改变
 
@@ -227,7 +231,7 @@
 
 ###### 查看 gateway
 
-> root@Canyou:~# netstart -rn
+> root@Canyou:~# netstat -rn
 >
 > Kernel IP routing table
 > Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
@@ -250,7 +254,7 @@
 > search localdomain
 > nameserver 192.168.116.2
 >
-> root@Canyou:~# cat /etc/resolv.conf | grep nameserver
+> root@Canyou:~# cat /etc/resolv.conf | grep nameserver  
 > nameserver 192.168.116.2
 
 
@@ -280,7 +284,7 @@
 > root@Canyou:~# apt install vim
 >
 >
-> root@Canyou:~$ apt -y install vim
+> root@Canyou:~# apt -y install vim
 
 
 
@@ -290,20 +294,607 @@
 
 > root@Canyou:~# apt install ntpdate
 
+显示 ntpdate 软件包目录信息
+
+> root@Canyou:~# dpkg -L nptdate
+>
+> /.
+> /etc
+> /etc/default
+> /etc/default/ntpdate
+> /etc/dhcp
+> /etc/dhcp/dhclient-exit-hooks.d
+> /etc/dhcp/dhclient-exit-hooks.d/ntpdate
+> /etc/logcheck
+> /etc/logcheck/ignore.d.server
+> /etc/logcheck/ignore.d.server/ntpdate
+> /usr
+> /usr/sbin
+> /usr/sbin/ntpdate
+> /usr/sbin/ntpdate-debian
+> /usr/share
+> /usr/share/doc
+> /usr/share/doc/ntpdate
+> /usr/share/doc/ntpdate/NEWS.Debian.gz
+> /usr/share/doc/ntpdate/README.Debian
+> /usr/share/doc/ntpdate/changelog.Debian.gz
+> /usr/share/doc/ntpdate/changelog.gz
+> /usr/share/doc/ntpdate/copyright
+> /usr/share/man
+> /usr/share/man/man8
+> /usr/share/man/man8/ntpdate-debian.8.gz
+> /usr/share/man/man8/ntpdate.8.gz
+
+使用 ntpdate 同步 cn.pool.ctp.org
+
+> root@Canyou:~# vim /etc/default/ntpdate
+>
+> 将原有的注释掉，加入 `NTPSERVERS="cn.pool.ntp.org"`
+>
+> <img src="img/ntp.png" style="zoom:67%;" align="left" />
+
+可通过 `man ntpdate` 查看命令帮助手册
+
+`crontab` 是用来定期执行程序的命令
+
+`crontab -l` 查看该用户定时执行的任务  
+`crontab -e` 编辑
+
+配合cron命令，来进行定期同步设置。在crontab中添加：`0 12 * * * * /usr/sbin/ntpdate 192.168.0.1 ` ，这样会在每天的12点整，同步一次时间。ntp服务器为192.168.0.1。
+
+或者，`*  */1  *  *  * ntpdate 0.asia.pool.ntp.org` ，每隔1小时同步一次时间。
 
 
 
+#### 文件的操作
+
+> root@uos:~# setfacl -m u:canyou:r /home/canyou/test
+>
+> root@uos:~# setfacl -m u:canyou:rw /home/canyou/test
+>
+> root@uos:~# setfacl -m g:canyou:0 /home/canyou/test
+>
+> 
+>
+>
+> root@uos:~# setfacl -x u:canyou /home/canyou/test
+>
+>
+> root@uos:~# getfctl /home/canyou/test
 
 
 
+#### 设置计划任务
+
+\- 对uosmaster1 设置计划任务，每天23点59分，执行/bin/echo “UOS is the best system”
+
+``` bash
+root@uos:~# crontab -e  -u  uosmaster1
+59  23 *  *  *  /bin/echo "UOS is the best system"
+【:wq】
+no crontab for uosmaster1 - using an empty one
+crontab: installing new crontab
+root@uos:~# crontab -l  -u  uosmaster1
+
+```
 
 
 
+#### 文件查找
+
+\- 查找名为 “passwd”的文件，
+
+\- 并把此文件的绝对路径写入/opt/pwdin.txt中
+
+``` bash
+root@uos:~# find /  -name passwd >  exam-uos-file.conf
+find: ‘/run/user/1000/gvfs’: 权限不够
+root@uos:~# cat exam-uos-file.conf
+/etc/pam.d/passwd
+/etc/cron.daily/passwd
+/etc/passwd
+/data/root/etc/passwd
+/root/etc/passwd
+/usr/bin/passwd
+/usr/share/bash-completion/completions/passwd
+/usr/share/doc/passwd
+/usr/share/lintian/overrides/passwd
+
+```
 
 
 
+#### 文件的保护
+
+\- 进入 /opt/ 目录，创建 uniontech.txt 文件,内容为：'UOS is the best system'
+
+\- 要求该文件 /opt/uniontech.txt ，不能被删除，不能被修改
+
+``` bash
+root@uos:~# echo 'UOS is the best system'  >> /opt/uniontech.txt  
+root@uos:~# cat /opt/uniontech.txt
+UOS is the best system
+
+root@uos:~# chattr  +ia  /opt/uniontech.txt
+root@uos:~# lsattr 
+root@uos:~# lsattr  /opt/uniontech.txt 
+----ia--------e---- /opt/uniontech.txt
+
+```
 
 
+
+#### 字符串的查找
+
+\- 查找 /opt目录下所有文件中包含“happyexam”的字符串，
+
+\- 并把查找出来的行号写入/opt/findcode.txt（注意：只写行号）
+
+``` bash
+root@uos:~# grep -rn  "happyexam"   /opt/  >  /opt/findcode.txt 
+grep: 输入文件 ‘/opt/findcode.txt’ 同时也作输出
+root@uos:~# cat /opt/findcode.txt
+/opt/b.txt:1:happyexam
+root@uos:~#vim  /opt/findcode.txt  //修改内容，只留行号
+1
+
+```
+
+
+
+#### 磁盘分区
+
+ 对24G的磁盘/dev/sdb，分4个大小为5G的分区和1个大小为4G的分区
+
+5个可以存数据的分区
+
+``` bash
+# fdisk  /dev/sdb
+n  回车  回车  回车  +5G   //主分区
+n  回车  回车  回车  +5G  //主分区
+n  回车  回车  回车  +5G  //主分区
+
+n  回车  回车  回车  回车     //剩余所有的空间都给扩展分区 Extended
+n  回车  5G    //逻辑分区
+n  回车  回车  回车      //逻辑分区
+w    //保存并退出
+
+# lsblk 查看分区
+# partprobe   刷新分区
+
+fdisk  -l   //查看分区表
+```
+
+> **知识点：**
+>
+> 在计算机上使用磁盘空间的过程：
+>
+> 识别硬盘 => 分区规划 => 格式化 => 挂载使用
+>
+> 毛坯房    打隔断   装修    入驻
+>
+> ​      MBR/msdos  EXT4|XFS
+>
+> 识别磁盘 --> 分区 --> 格式化 --> 挂载 --> 访问挂载点
+>
+> fdisk -l/lsblk --> fdisk/parted --> mkfs相关 --> mount --> ls、vim
+>
+> 考试时只有一块/dev/vda
+>
+>  
+>
+> 分区模式msdos：四个主分区、扩展分区、逻辑分区
+>
+> ​        最大支持容量为 2.2TB 的磁盘
+>
+> 分区模式gpt（支持>2T空间）：主分区（操作系统支持一般<128个）
+>
+> ​        最大支持容量为18EB
+>
+> ​    1EB=1024PB
+>
+> ​       1PB=1024TB
+>
+> ​       1TB=1024GB
+>
+> ​       1GB=1024MB
+>
+>  
+>
+> 磁盘分区操作 ——
+>
+> fdisk -l  //查看分区表
+>
+> fdisk /dev/vdb 
+>
+>  
+>
+> 刷新硬盘分区表：
+>
+>    partprobe /dev/vdb 或者 partx -a /dev/vdb
+>
+>  
+>
+> 查看系统所有的磁盘设备  
+>
+> [root@uos ~]# lsblk 
+>
+> NAME  MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+>
+> sda  253:0  0 10G 0 disk 
+>
+> └─sda1 253:1  0 10G 0 part /
+>
+> sdb  253:16  0 10G 0 disk 
+>
+>  
+>
+>  
+>
+> 格式化操作：
+>
+>  mkfs 工具集 （make file system）
+>
+> mkfs.ext3  分区设备
+>
+> mkfs.ext4  分区设备
+>
+> mkfs.xfs  分区设备
+>
+> mkfs.vfat -F 32 分区设备
+>
+>  
+>
+> 总结：
+>
+>   1、查看磁盘 lsblk
+>
+> ​     2、划分分区 fdisk
+>
+> ​     3、刷新  partprobe
+>
+> ​     4、格式化 mkfs.ext4 mkfs.xfs
+>
+> ​     5、查看文件系统 blkid
+>
+> ​     6、挂载使用 mount
+
+
+
+#### RAID的创建
+
+Redundant Array of Independent Disks 独立冗余磁盘阵列
+
+mdadm multiple device admin 用于管理 RAID磁盘阵列组
+
+ 
+
+\- 对上一题划分的4块大小为5G的分区进行RAID5创建，预留最大空间(大于14G)，路径名称为“/dev/md5”
+
+\- 创建完后将raid5信息写入/etc/mdadm.conf文件中
+
+\- 执行 update-initramfs -u，否则重启后raid5名称会发生变化
+
+``` bash
+安装mdadm
+root@uos:~# apt install -y mdadm
+
+root@uos:~# mdadm  -C  /dev/md5  -a  yes  -l  5   -n  4  /dev/sdb1 /dev/sdb2 /dev/sdb3 /dev/sdb5 
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md5 started.
+
+root@uos:~# mdadm  -D /dev/md5  >>  /etc/mdadm.conf 
+
+```
+
+> +++++++++如raid创建错误，删除linux软raid方法++++++++++++++
+>
+> 1.先umount组建好的raid:umount /dev/md5
+>
+> 2.停止raid设备：mdadm -S /dev/md5
+>
+> 3.此时如果忘了raid中的硬盘名称，要么重启系统，要么运行:mdadm -A -s /dev/md5 然后再用mdadm -D /dev/md5查看raid中包含哪几个硬盘。再次运行第二步停止命令:mdadm -S /dev/md5
+>
+> 4.删除raid里的所有硬盘：mdadm --misc --zero-superblock /dev/sdc,
+>
+> ​            mdadm --misc --zero-superblock /dev/sdd
+>
+> ​            mdadm --misc --zero-superblock /dev/sde
+>
+> ​            mdadm --misc --zero-superblock /dev/sdf
+>
+>  
+>
+> 有几块硬盘，就按格式删几次，注意最后面的硬盘名称。
+>
+> 5.删除配置文件：rm -f /etc/mdadm.conf
+>
+> 6.如果之前将raid相关信息写入了/etc/fstab配置文件中，还需vim /etc/fstab，将raid相关的内容删除即可。
+
+
+
+#### 对新加磁盘阵列“md5”进行逻辑卷制作
+
+**pvcreate****命令** 用于将物理硬盘分区初始化为物理卷，以便LVM使用。
+
+LVM **Logical Volume Manager****（逻辑卷管理）**
+
+vgcreate 用于创建LVM卷组 （volume group）
+
+lvcreate 用于创建LVM的逻辑卷
+
+lvs 报告有关逻辑卷的信息
+
+ 
+
+\- 新建物理卷，使用“md5”
+
+\- 新建卷组，名称为“uosvg”
+
+\- 新建逻辑卷，使用所有卷组容量(大于1.4G)，名称“uoslv”
+
+``` bash
+root@uos:~# pvcreate  /dev/md5 
+  Physical volume "/dev/md5" successfully created.
+root@uos:~# vgcreate  uosvg   /dev/md5
+  Volume group "uosvg" successfully created
+root@uos:~# lvcreate  -l +100%free uosvg   -n  uoslv
+  Logical volume "uoslv" created.
+root@uos:~# lvs
+  LV    VG    Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  uoslv uosvg -wi-a----- 14.98g 
+
+```
+
+> **知识点： raid** **硬盘化零为整， lvm** **分区化零为整**
+>
+> LVM逻辑卷管理机制
+>
+> —— 化零为整、动态伸缩
+>
+>  
+>
+> 新建逻辑卷：将众多的物理卷（pv）组成卷组（vg），再从卷组中划分逻辑卷（lv）
+>
+> 物理卷            卷组           逻辑卷
+>
+> Physical Volume   Volume Group      Logical Volume
+>
+>  
+>
+> 游击队 ===》 八路军 ===》按需增编/简编人员
+>
+>  
+>
+> 把零散的分区（PV物理设备） ===》整编的大卷组（VG虚拟磁盘） ===》 根据需要获取空间（虚拟分区LV）
+>
+>  
+>
+> 识别磁盘 --> 分区 --> 物理卷--》卷组 --> 逻辑卷 --> 格式化 --> 挂载 --> 访问挂载点
+>
+>  
+>
+>  
+>
+> LVM管理工具 ——
+>
+>   物理卷操作：pvscan、pvdisplay、pvcreate
+>
+>   卷组操作：vgscan、vgdisplay、vgcreate、vgremove、
+>
+> ​           vgextend、vgchange
+>
+>   逻辑卷操作：lvscan、lvdisplay、lvcreate、lvremove、lvextend
+>
+>  
+>
+> *scan 查看基本信息
+>
+> *display 显示详细信息
+>
+> *create 创建
+>
+> *remove 移除
+>
+> *extend 扩展
+>
+>  
+
+
+
+#### 格式化新添加的逻辑卷并挂载
+
+\- 对新添加的逻辑卷进行文件格式化“ext4”
+
+\- 创建目录/opt/data
+
+\- 挂载新添加的逻辑卷到上步创建的目录
+
+``` bash
+root@uos:~# lvscan 
+  ACTIVE            '/dev/uosvg/uoslv' [14.98 GiB] inherit
+
+root@uos:~# mkfs.ext4  /dev/uosvg/uoslv
+
+root@uos:~# blkid  /dev/uosvg/uoslv
+/dev/uosvg/uoslv: UUID="002cbcfc-7c80-4fca-9192-401aa84039fd" TYPE="ext4"
+root@uos:~# mkdir /opt/data
+
+root@uos:~# vim /etc/fstab 
+root@uos:~# tail -1 /etc/fstab
+/dev/uosvg/uoslv        /opt/data       ext4    defaults        0       0
+root@uos:~# mount -a
+root@uos:~# df -hT
+文件系统                类型               容量  已用  可用 已用% 挂载点
+.. ..
+/dev/mapper/uosvg-uoslv ext4                15G   41M   14G    1% /opt/data
+
+```
+
+
+
+#### 在线扩容
+
+使用13题(磁盘分区)划分的4G分区，对/opt/data 进行在线扩容
+
+识别磁盘 --> 分区 --> 物理卷--》卷组 --> 逻辑卷 --> 格式化 --> 挂载  --> 访问挂载点
+
+``` bash
+
+root@uos:~# lsblk
+... ...
+└─sdb6              8:22   0     4G  0 part  
+sr0                11:0    1  1024M  0 rom   
+root@uos:~# pvcreate  /dev/sdb6
+  Physical volume "/dev/sdb6" successfully created.
+root@uos:~# vgextend  uosvg /dev/sdb6
+  Volume group "uosvg" successfully extended
+root@uos:~# vgs
+  VG    #PV #LV #SN Attr   VSize   VFree 
+  uosvg   2   1   0 wz--n- <18.98g <4.00g
+root@uos:~# lvs
+  LV    VG    Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  uoslv uosvg -wi-ao---- 14.98g                                                    
+root@uos:~# lvscan 
+  ACTIVE            '/dev/uosvg/uoslv' [14.98 GiB] inherit
+root@uos:~# lvextend  -r  /dev/uosvg/uoslv  /dev/sdb6 
+
+root@uos:~# lvs
+  LV    VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  uoslv uosvg -wi-ao---- <18.98g  
+
+```
+
+
+
+#### 开机自动挂载【见16题】（格式化新添加的逻辑卷并挂载）
+
+修改fstab配置文件实现对新扩容的磁盘阵列的**开机自动挂载**
+
+> **知识点：**
+>
+> 实现开机自动挂载
+>
+> 配置文件 /etc/fstab 的记录格式
+>
+> 设备路径   挂载点  类型  参数   备份标记  检测顺序 
+>
+> /dev/sdb1 /mypart1  ext4  defdaults   0     0
+>
+>  
+>
+>  
+>
+> **挂载的限制** 
+>
+> 1、根目录是必须挂载的，而且一定要先于其他mount point被挂载。
+>
+>   因为mount是所有目录的根目录，其他目录都是由根目录 /衍生出来的。
+>
+> 2、挂载点必须是已经存在的目录。
+>
+> 3、挂载点的指定可以任意，但必须遵守必要的系统目录架构原则
+>
+> 4、所有挂载点在同一时间只能被挂载一次
+>
+> 5、所有分区在同一时间只能挂在一次
+>
+> 6、若进行卸载，必须将工作目录退出挂载点（及其子目录）之外。
+
+
+
+#### 文件的打包与拆解
+
+\- 从http://www.firefox.com.cn/下载Firefox-latest-x86_64.tar
+
+\- 对Firefox-latest-x86_64.tar.bz2 进行解包，解压后的目录移动到/opt/data下
+
+\- 对/opt/data目录进行打包 ，打包完的名称为“data.tar.gz”存放位置在/opt目录下
+
+``` bash
+root@uos:~# tar -jxvf  Firefox-latest-x86_64.tar.bz2   -C  /opt/data/
+root@uos:~# tar -zcvf   /opt/data.tar.gz    /opt/data/
+
+```
+
+> **涉及知识点：**
+>
+> Linux系统的文档备份/恢复 ——
+>
+> 归档：把很多文件归纳到一起   tar
+>
+> 压缩：减小文件占用空间的大小  gzip、bzip2、xz 
+>
+> **tar****命令的选项：**
+>
+>   -c：创建新文档
+>
+>   -x：释放备份文档
+>
+>   -f：指定文档名称
+>
+>   -z：处理 .gz 格式
+>
+>   -j：处理 .bz2 格式
+>
+>   -J：处理 .xz 格式
+>
+>   -t：显示文档列表
+>
+>   -p：保持原有权限
+>
+>   -P：保持绝对路径
+>
+>   -C：指定释放备份文件时的目标位置
+>
+>   --exclude=排除的子目录
+>
+> **tar** **制作备份文件：**
+>
+>   tar -zcf 备份文件名.tar.gz 被备份的文档....
+>
+>   tar -jcf 备份文件名.tar.bz2 被备份的文档....
+>
+>   tar -Jcf 备份文件名.tar.xz 被备份的文档....
+>
+> **tar** **从备份文件恢复：**
+>
+>   tar -xf 备份文件名  [-C 目标文件夹]
+>
+>  
+>
+> **tar** **查看备份文件内容：**
+>
+>   tar -tf 备份文件名
+>
+>  
+>
+> -P 保持绝对路径
+>
+> file:用于辨识文件类型
+
+
+
+#### 使用systemctl命令设置服务的开机自启动
+
+\- 检查sshd配置，要求允许root登陆并重启sshd
+
+\- 检查sshd配置，要求设置使用DNS反查为no   
+
+\- 添加ssh服务到开启自启动
+
+ssh 远程链接
+
+``` bash
+root@uos:~# vim /etc/ssh/sshd_config 
+PermitRootLogin  yes
+UseDNS no
+
+root@uos:~# systemctl restart ssh
+root@uos:~# systemctl enable  ssh
+
+
+```
 
 
 
@@ -345,6 +936,14 @@ Deepin 是基于 `Debian` 的系统
 | /tmp        | tmp 是 temporary(临时) 的缩写这个目录是用来存放一些临时文件的。 |
 | /usr        | usr 是 unix shared resources(共享资源) 的缩写，这是一个非常重要的目录，用户的很多应用程序和文件都放在这个目录下，类似于 windows 下的 program files 目录。<br />/usr/bin: 系统用户使用的应用程序。<br />/usr/sbin: 超级用户使用的比较高级的管理程序和系统守护程序。<br />/usr/src: 内核源代码默认的放置目录。 |
 | /var        | var 是 variable(变量) 的缩写，这个目录中存放着在不断扩充着的东西，我们习惯将那些经常被修改的目录放在这个目录下。包括各种日志文件。 |
+
+
+
+###### /etc/init.d
+
+[Linux 目录之 /etc/init.d/ 介绍](https://blog.csdn.net/liaowenxiong/article/details/117083906)
+
+
 
 
 
