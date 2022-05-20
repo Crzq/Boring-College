@@ -288,7 +288,7 @@
 
 安装 ntpdate
 
-> root@Canyou:~# apt install nptdate
+> root@Canyou:~# apt install ntpdate
 
 
 
