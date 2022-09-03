@@ -1,4 +1,4 @@
-## OpenStack 搭建
+## OpenStack搭建
 
 #### 环境
 * VMware Workstation
